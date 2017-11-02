@@ -24,207 +24,106 @@ class EC301DS(Device):
 
 
     ### Properties ###
+
     Host = device_property(dtype=str, default_value="b-nanomax-ec301-0", doc="hostname")
     Port = device_property(dtype=int, default_value=1680)
 
 
     ### Attributes ###
-    voltage = attribute(label="Voltage", 
-                        dtype=float,
-                        display_level=DispLevel.OPERATOR,
-                        access=AttrWriteType.READ, # or READ_WRITE
-                        unit="V",
-                        format="4.2f",
-                        min_value=-15.0, max_value=15.0,
-                        doc="current voltage")
 
-    currrent = attribute(label="Current", 
-                        dtype=float,
-                        display_level=DispLevel.OPERATOR,
-                        access=AttrWriteType.READ, # or READ_WRITE
-                        unit="A",
-                        format=".4e",
-                        min_value=-1.0, max_value=1.0,
-                        doc="current current")
+    @attribute(label='Voltage', dtype=float, doc='Single voltage measurement'):
+    def voltage(self):
+        return self.ec301.voltage
 
-    idstring = attribute(label="ID", 
-                        dtype=str,
-                        display_level=DispLevel.OPERATOR,
-                        access=AttrWriteType.READ, # or READ_WRITE
-                        doc="device ID string")
+    @attribute(label='Current', dtype=float, doc='Single current measurement'):
+    def current(self):
+        return self.ec301.current
 
-    error = attribute(label="Error", 
-                        dtype=str,
-                        display_level=DispLevel.OPERATOR,
-                        access=AttrWriteType.READ, # or READ_WRITE
-                        doc="last error message")
+    @attribute(label='ID', dtype=str, doc='Device ID string'):
+    def id(self):
+        return self.ec301.id
 
-    running = attribute(label="Running",
-                        dtype=bool,
-                        display_level=DispLevel.OPERATOR,
-                        access=AttrWriteType.READ, # or READ_WRITE
-                        doc="is the device acquiring/scanning?")
+    @attribute(label='Error', dtype=str, doc='Last error message'):
+    def error(self):
+        return self.ec301.error
 
-    mode = attribute(label="Mode",
-                        dtype=enum, #FIXME
-                        enum_labels=('POTENTIOSTAT', 'GALVANOSTAT', 'ZRA')
-                        display_level=DispLevel.OPERATOR,
-                        access=AttrWriteType.READ_WRITE
-                        doc="control loop mode")
+    @attribute(label='Running', dtype=bool, doc='acquiring/scanning'):
+    def running(self):
+        return self.ec301.running
 
-    enabled = attribute(label="Enabled",
-                        dtype=bool,
-                        display_level=DispLevel.OPERATOR,
-                        access=AttrWriteType.READ_WRITE
-                        doc="is the cell under device control?")
+    @attribute(label='Mode', dtype=enum, doc='Control mode', ## FIXME
+            enum_labels=('POTENTIOSTAT', 'GALVANOSTAT', 'ZRA')):
+    def mode(self):
+        return self.ec301.mode
 
-    irange = attribute(label="Range",
-                        dtype=int,
-                        display_level=DispLevel.OPERATOR,
-                        access=AttrWriteType.READ_WRITE
-                        doc="current range as log(range/A)")
-
-    autorange = attribute(label="Autorange",
-                        dtype=bool
-                        display_level=DispLevel.OPERATOR,
-                        access=AttrWriteType.READ_WRITE
-                        doc="current range automatically set?")
-
-    averaging = attribute(label="Averaging",
-                        dtype=int,
-                        display_level=DispLevel.OPERATOR,
-                        access=AttrWriteType.READ_WRITE
-                        doc="number of 4 us samples averaged in each data point")
-
-    bandwidth = attribute(label="Bandwidth",
-                        dtype=int,
-                        display_level=DispLevel.OPERATOR,
-                        access=AttrWriteType.READ_WRITE
-                        doc="control loop bandwidth as log(bw/Hz)")
+    @mode.write
+    def mode(self, mod):
+        return self.ec301.mode(mod)
 
 
-    ### Read methods for the read only attributes ###
 
-    def read_voltage(self):
-        try:
-            raise NotImplementedError
-        except:
-            self.set_state(PyTango.DevState.FAULT)
-            self.set_status('Device failed at read_voltage')
 
-    def read_current(self):
-        try:
-            raise NotImplementedError
-        except:
-            self.set_state(PyTango.DevState.FAULT)
-            self.set_status('Device failed at read_current')
+## STILL TO DO:
+    # ### Cell enabled? Querying gives false if the front panel switch is out.
+    # @property
+    # def enabled(self):
+    #     return bool(int(self._query('cellon?')))
 
-    def read_id(self):
-        try:
-            raise NotImplementedError
-        except:
-            self.set_state(PyTango.DevState.FAULT)
-            self.set_status('Device failed at read_id')
- 
-     def read_error(self):
-        try:
-            raise NotImplementedError
-        except:
-            self.set_state(PyTango.DevState.FAULT)
-            self.set_status('Device failed at read_error')
+    # @enabled.setter
+    # def enabled(self, state):
+    #     assert state in [0, 1, True, False]
+    #     self._query('ceenab %d' % int(state))
 
-    def read_running(self):
-        try:
-            raise NotImplementedError
-        except:
-            self.set_state(PyTango.DevState.FAULT)
-            self.set_status('Device failed at read_running')
+    # ### Current range as log(range/A)
+    # @property
+    # def range(self):
+    #     return self.RANGE_MAP[int(self._query('irange?'))]
 
-    ### Read/write methods for the read/write attributes ###
+    # @range.setter
+    # def range(self, rng):
+    #     assert rng in self.RANGE_MAP.values()
+    #     if self.autorange:
+    #         self.autorange = False
+    #     target = reversed_dict(self.RANGE_MAP)[rng]
+    #     self._query('irange %d' % target)
 
-    def read_mode(self):
-        try:
-            raise NotImplementedError
-        except:
-            self.set_state(PyTango.DevState.FAULT)
-            self.set_status('Device failed at read_mode')
+    # ### Autorange on/off
+    # @property
+    # def autorange(self):
+    #     return bool(int(self._query('irnaut?')))
 
-    def write_mode(self):
-        try:
-            raise NotImplementedError
-        except:
-            self.set_state(PyTango.DevState.FAULT)
-            self.set_status('Device failed at write_mode')
+    # @autorange.setter
+    # def autorange(self, val):
+    #     assert val in [0, 1, True, False]
+    #     if not self.mode == 'POTENTIOSTAT':
+    #         self.mode = 'POTENTIOSTAT'
+    #     self._query('irnaut %d' % int(val))
 
-    def read_enabled(self):
-        try:
-            raise NotImplementedError
-        except:
-            self.set_state(PyTango.DevState.FAULT)
-            self.set_status('Device failed at read_enabled')
+    # ### Sample averaging
+    # @property
+    # def averaging(self):
+    #     return 2**int(self._query('avgexp?'))
 
-    def write_enabled(self):
-        try:
-            raise NotImplementedError
-        except:
-            self.set_state(PyTango.DevState.FAULT)
-            self.set_status('Device failed at write_enabled')
+    # @averaging.setter
+    # def averaging(self, avg):
+    #     assert avg in 2**np.arange(8+1, dtype=int)
+    #     val = int(np.log2(avg))
+    #     self._query('avgexp %d' % val)
+    #     time.sleep(.030) # The manual specifies this.
 
-    def read_irange(self):
-        try:
-            raise NotImplementedError
-        except:
-            self.set_state(PyTango.DevState.FAULT)
-            self.set_status('Device failed at read_irange')
+    # ### Control loop bandwidth
+    # @property
+    # def bandwidth(self):
+    #     return self.BANDWIDTH_MAP[int(self._query('clbwth?'))]
 
-    def write_irange(self):
-        try:
-            raise NotImplementedError
-        except:
-            self.set_state(PyTango.DevState.FAULT)
-            self.set_status('Device failed at write_irange')
+    # @bandwidth.setter
+    # def bandwidth(self, bw):
+    #     assert bw in self.BANDWIDTH_MAP.values()
+    #     target = reversed_dict(self.BANDWIDTH_MAP)[bw]
+    #     self._query('clbwth %d' % target)
 
-    def read_autorange(self):
-        try:
-            raise NotImplementedError
-        except:
-            self.set_state(PyTango.DevState.FAULT)
-            self.set_status('Device failed at read_autorange')
 
-    def write_autorange(self):
-        try:
-            raise NotImplementedError
-        except:
-            self.set_state(PyTango.DevState.FAULT)
-            self.set_status('Device failed at write_autorange')
 
-    def read_averaging(self):
-        try:
-            raise NotImplementedError
-        except:
-            self.set_state(PyTango.DevState.FAULT)
-            self.set_status('Device failed at read_averaging')
-
-    def write_averaging(self):
-        try:
-            raise NotImplementedError
-        except:
-            self.set_state(PyTango.DevState.FAULT)
-            self.set_status('Device failed at write_averaging')
-
-    def read_bandwidth(self):
-        try:
-            raise NotImplementedError
-        except:
-            self.set_state(PyTango.DevState.FAULT)
-            self.set_status('Device failed at read_bandwidth')
-
-    def write_bandwidth(self):
-        try:
-            raise NotImplementedError
-        except:
-            self.set_state(PyTango.DevState.FAULT)
-            self.set_status('Device failed at write_bandwidth')
 
     ### Commands ###
     
