@@ -1,5 +1,5 @@
 #!/usr/bin/env python 
 
-from regloicc import main 
+from ec301 import main 
 
 main()

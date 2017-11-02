@@ -1,4 +1,4 @@
-import regloicclib
+import ec301lib
 
 # Tango imports
 # from PyTango import AttrWriteType, DispLevel
@@ -12,4 +12,4 @@ def main():
     # run device server here
     # server_run((regloiccDS,))
 
-    regloicclib.example_usage()
+    ec301lib.example_usage_bias()
