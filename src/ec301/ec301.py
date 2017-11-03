@@ -1,3 +1,9 @@
+# TODO:
+#   * we need to interface ec301.running through some state getter
+#   * returning data
+#   * enums (below)
+#   * other questionmarks below
+
 # Device library import
 import ec301lib
 
@@ -31,98 +37,78 @@ class EC301DS(Device):
 
     ### Attributes ###
 
-    @attribute(label='Voltage', dtype=float, doc='Single voltage measurement'):
+    @attribute(label='Voltage', dtype=float, doc='Single voltage measurement')
     def voltage(self):
         return self.ec301.voltage
 
-    @attribute(label='Current', dtype=float, doc='Single current measurement'):
+    @attribute(label='Current', dtype=float, doc='Single current measurement')
     def current(self):
         return self.ec301.current
 
-    @attribute(label='ID', dtype=str, doc='Device ID string'):
+    @attribute(label='ID', dtype=str, doc='Device ID string')
     def id(self):
         return self.ec301.id
 
-    @attribute(label='Error', dtype=str, doc='Last error message'):
+    @attribute(label='Error', dtype=str, doc='Last error message')
     def error(self):
         return self.ec301.error
 
-    @attribute(label='Running', dtype=bool, doc='acquiring/scanning'):
+    @attribute(label='Running', dtype=bool, doc='acquiring/scanning')
     def running(self):
         return self.ec301.running
 
-    @attribute(label='Mode', dtype=enum, doc='Control mode', ## FIXME
-            enum_labels=('POTENTIOSTAT', 'GALVANOSTAT', 'ZRA')):
+    ## How do these enums work?
+    @attribute(label='Mode', dtype=int, doc='Control mode',
+            enum_labels=('POTENTIOSTAT', 'GALVANOSTAT', 'ZRA'))
     def mode(self):
         return self.ec301.mode
 
     @mode.write
     def mode(self, mod):
-        return self.ec301.mode(mod)
+        mod = self.ec301.MODE_MAP[mod] # ?
+        self.ec301.mode(mod)
 
+    @attribute(label='Enabled', dtype=bool, 
+        doc='Cell enabled? Querying gives false if the front panel switch is out.')
+    def enabled(self):
+        return self.ec301.enabled
 
+    @enabled.write
+    def enabled(self, stat):
+        self.ec301.enabled = stat
 
+    @attribute(label='Range', dtype=int, doc='Current range as log(range/A)')
+    def range(self):
+        return self.ec301.range
 
-## STILL TO DO:
-    # ### Cell enabled? Querying gives false if the front panel switch is out.
-    # @property
-    # def enabled(self):
-    #     return bool(int(self._query('cellon?')))
+    @range.write
+    def range(self, rng):
+        self.ec301.range = rng
 
-    # @enabled.setter
-    # def enabled(self, state):
-    #     assert state in [0, 1, True, False]
-    #     self._query('ceenab %d' % int(state))
+    @attribute(label='Autorange', dtype=bool, doc='Autorange on/off')
+    def autorange(self):
+        return self.ec301.autorange
 
-    # ### Current range as log(range/A)
-    # @property
-    # def range(self):
-    #     return self.RANGE_MAP[int(self._query('irange?'))]
+    @autorange.write
+    def autorange(self, val):
+        self.ec301.autorange = val
 
-    # @range.setter
-    # def range(self, rng):
-    #     assert rng in self.RANGE_MAP.values()
-    #     if self.autorange:
-    #         self.autorange = False
-    #     target = reversed_dict(self.RANGE_MAP)[rng]
-    #     self._query('irange %d' % target)
+    @attribute(label='Averaging', dtype=int, doc='Sample averaging')
+    def averaging(self):
+        return self.ec301.averaging
 
-    # ### Autorange on/off
-    # @property
-    # def autorange(self):
-    #     return bool(int(self._query('irnaut?')))
+    # should perhaps be an enum
+    @averaging.write
+    def averaging(self, avg):
+        self.ec301.averaging = avg
 
-    # @autorange.setter
-    # def autorange(self, val):
-    #     assert val in [0, 1, True, False]
-    #     if not self.mode == 'POTENTIOSTAT':
-    #         self.mode = 'POTENTIOSTAT'
-    #     self._query('irnaut %d' % int(val))
+    @attribute(label='Bandwidth', dtype=int, doc='Control loop bandwidth as log(bw/Hz)')
+    def bandwidth(self):
+        return self.ec301.averaging
 
-    # ### Sample averaging
-    # @property
-    # def averaging(self):
-    #     return 2**int(self._query('avgexp?'))
-
-    # @averaging.setter
-    # def averaging(self, avg):
-    #     assert avg in 2**np.arange(8+1, dtype=int)
-    #     val = int(np.log2(avg))
-    #     self._query('avgexp %d' % val)
-    #     time.sleep(.030) # The manual specifies this.
-
-    # ### Control loop bandwidth
-    # @property
-    # def bandwidth(self):
-    #     return self.BANDWIDTH_MAP[int(self._query('clbwth?'))]
-
-    # @bandwidth.setter
-    # def bandwidth(self, bw):
-    #     assert bw in self.BANDWIDTH_MAP.values()
-    #     target = reversed_dict(self.BANDWIDTH_MAP)[bw]
-    #     self._query('clbwth %d' % target)
-
-
+    @bandwidth.write
+    def bandwidth(self, bw):
+        self.ec301.bandwidth = bw
 
 
     ### Commands ###
@@ -159,6 +145,7 @@ class EC301DS(Device):
         raise NotImplementedError
         return True
 
+    # Can this return many arrays or does it have to be split into many commands?
     @command()
     def readout(self):
         raise NotImplementedError
@@ -202,5 +189,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
