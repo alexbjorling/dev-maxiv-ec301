@@ -37,11 +37,11 @@ class EC301DS(Device):
 
     ### Attributes ###
 
-    @attribute(label='Voltage', dtype=float, doc='Single voltage measurement')
+    @attribute(label='Voltage', dtype=float, doc='Single voltage measurement', unit='V')
     def voltage(self):
         return self.ec301.voltage
 
-    @attribute(label='Current', dtype=float, doc='Single current measurement')
+    @attribute(label='Current', dtype=float, doc='Single current measurement', unit='A')
     def current(self):
         return self.ec301.current
 
@@ -77,13 +77,21 @@ class EC301DS(Device):
     def enabled(self, stat):
         self.ec301.enabled = stat
 
-    @attribute(label='Range', dtype=int, doc='Current range as log(range/A)')
-    def range(self):
-        return self.ec301.range
+    @attribute(label='I Range', dtype=int, doc='Current range as log(range/A)')
+    def Irange(self):
+        return self.ec301.Irange
 
-    @range.write
-    def range(self, rng):
-        self.ec301.range = rng
+    @Irange.write
+    def Irange(self, rng):
+        self.ec301.Irange = rng
+
+    @attribute(label='E Range', dtype=int, doc='Potential range (2, 5, or 15)', unit='V')
+    def Erange(self):
+        return self.ec301.Erange
+
+    @Erange.write
+    def Erange(self, rng):
+        self.ec301.Erange = rng
 
     @attribute(label='Autorange', dtype=bool, doc='Autorange on/off')
     def autorange(self):
@@ -109,6 +117,30 @@ class EC301DS(Device):
     @bandwidth.write
     def bandwidth(self, bw):
         self.ec301.bandwidth = bw
+
+    @attribute(label='I lowpass', dtype=bool, doc='Enables 10 kHz low-pass filter in front of I ADC')
+    def Ilowpass(self):
+        return self.ec301.Ilowpass
+
+    @Ilowpass.write
+    def Ilowpass(self, val):
+        self.ec301.Ilowpass = val
+
+    @attribute(label='E lowpass', dtype=bool, doc='Enables 10 kHz low-pass filter in front of E ADC')
+    def Elowpass(self):
+        return self.ec301.Elowpass
+
+    @Elowpass.write
+    def Elowpass(self, val):
+        self.ec301.Elowpass = val
+
+    @attribute(label='Compliance limit', dtype=float, doc='Limit on the compliance voltage', unit='V')
+    def compliance_limit(self):
+        return self.ec301.compliance_voltage
+
+    @compliance_limit.write
+    def compliance_limit(self, val):
+        self.ec301.compliance_limit = val
 
 
     ### Commands ###
