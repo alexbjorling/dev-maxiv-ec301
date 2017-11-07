@@ -58,14 +58,12 @@ class EC301DS(Device):
         return self.ec301.running
 
     ## How do these enums work?
-    @attribute(label='Mode', dtype=int, doc='Control mode',
-            enum_labels=('POTENTIOSTAT', 'GALVANOSTAT', 'ZRA'))
+    @attribute(label='Mode', dtype=str, doc='Control mode')
     def mode(self):
         return self.ec301.mode
 
     @mode.write
     def mode(self, mod):
-        mod = self.ec301.MODE_MAP[mod] # ?
         self.ec301.mode(mod)
 
     @attribute(label='Enabled', dtype=bool, 
@@ -112,13 +110,13 @@ class EC301DS(Device):
 
     @attribute(label='Bandwidth', dtype=int, doc='Control loop bandwidth as log(bw/Hz)')
     def bandwidth(self):
-        return self.ec301.averaging
+        return self.ec301.bandwidth
 
     @bandwidth.write
     def bandwidth(self, bw):
         self.ec301.bandwidth = bw
 
-    @attribute(label='I lowpass', dtype=bool, doc='Enables 10 kHz low-pass filter in front of I ADC')
+    @attribute(label='I lowpass 10kHz', dtype=bool, doc='Enables 10 kHz low-pass filter in front of I ADC')
     def Ilowpass(self):
         return self.ec301.Ilowpass
 
@@ -126,7 +124,7 @@ class EC301DS(Device):
     def Ilowpass(self, val):
         self.ec301.Ilowpass = val
 
-    @attribute(label='E lowpass', dtype=bool, doc='Enables 10 kHz low-pass filter in front of E ADC')
+    @attribute(label='E lowpass 10kHz', dtype=bool, doc='Enables 10 kHz low-pass filter in front of E ADC')
     def Elowpass(self):
         return self.ec301.Elowpass
 
@@ -136,7 +134,7 @@ class EC301DS(Device):
 
     @attribute(label='Compliance limit', dtype=float, doc='Limit on the compliance voltage', unit='V')
     def compliance_limit(self):
-        return self.ec301.compliance_voltage
+        return self.ec301.compliance_limit
 
     @compliance_limit.write
     def compliance_limit(self, val):
