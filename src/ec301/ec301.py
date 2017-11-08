@@ -64,7 +64,7 @@ class EC301DS(Device):
 
     @mode.write
     def mode(self, mod):
-        self.ec301.mode(mod)
+        self.ec301.mode = mod
 
     @attribute(label='Enabled', dtype=bool, 
         doc='Cell enabled? Querying gives false if the front panel switch is out.')
