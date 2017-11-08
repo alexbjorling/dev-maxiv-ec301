@@ -1,9 +1,3 @@
-# TODO:
-#   * we need to interface ec301.running through some state getter
-#   * returning data
-#   * enums (below)
-#   * other questionmarks below
-
 # Device library import
 import ec301lib
 
@@ -200,7 +194,7 @@ class EC301DS(Device):
 
     ### Other stuff ###
 
-    # HOW DOES THIS WORK?
+    # Not sure what this is
     def get_device_properties(self, cls=None):
         """Patch version of device properties.
 
@@ -225,7 +219,7 @@ class EC301DS(Device):
         
         self.set_state(PyTango.DevState.ON)
     
-    # DO I NEED THIS?
+    # not using this
     def always_executed_hook(self):
         pass
 

@@ -1,3 +1,4 @@
 TODO:
-* implement everything
+* Handle States correctly (not done now)
+* Error handling
 
