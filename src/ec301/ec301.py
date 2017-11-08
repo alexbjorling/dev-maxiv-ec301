@@ -37,11 +37,11 @@ class EC301DS(Device):
 
     ### Attributes ###
 
-    @attribute(label='Voltage', dtype=float, doc='Single voltage measurement', unit='V')
+    @attribute(label='Voltage', dtype=float, doc='Single voltage measurement', unit='V', format='1.3f')
     def voltage(self):
         return self.ec301.voltage
 
-    @attribute(label='Current', dtype=float, doc='Single current measurement', unit='A')
+    @attribute(label='Current', dtype=float, doc='Single current measurement', unit='A', format='.3e')
     def current(self):
         return self.ec301.current
 
@@ -57,7 +57,6 @@ class EC301DS(Device):
     def running(self):
         return self.ec301.running
 
-    ## How do these enums work?
     @attribute(label='Mode', dtype=str, doc='Control mode')
     def mode(self):
         return self.ec301.mode
@@ -143,43 +142,60 @@ class EC301DS(Device):
 
     ### Commands ###
     
-    @command()
+    @command(dtype_in=float)
     def setPotential(self, pot):
-        raise NotImplementedError
-        return True
+        self.ec301.setPotential(pot)
 
-    @command()
+    @command(dtype_in=float)
     def setCurrent(self, cur):
-        raise NotImplementedError
-        return True
+        self.ec301.setCurrent(cur)
 
-    @command()
-    def acquire(self, time=1.0, trigger=False):
-        raise NotImplementedError
-        return True
+    @command(dtype_in=str)
+    def acquire(self, arg_list):
+        arg_list = arg_list.strip()
+        time, trigger = [eval(s) for s in arg_list.split()]
+        self.ec301.acquire(time, trigger)
 
-    @command()
-    def potentialStep(self, t0=1, t1=1, E0=0, E1=1, trigger=False, 
-                full_bandwidth=True, return_to_E0=True):
-        raise NotImplementedError
-        return True
+    @command(dtype_in=str)
+    def potentialStep(self, arg_list):
+        arg_list = arg_list.strip()
+        t0, t1, E0, E1, trigger, full_bandwidth, return_to_E0 = [eval(s) for s in arg_list.split()]
+        self.ec301.potentialStep(t0, t1, E0, E1, trigger, full_bandwidth, return_to_E0)
 
-    @command()
-    def potentialCycle(self, t0=1, E0=.2, E1=1, E2=0, 
-                v=.100, cycles=1, trigger=False):
-        raise NotImplementedError
-        return True
+    @command(dtype_in=str)
+    def potentialCycle(self, arg_list):
+        arg_list = arg_list.strip()
+        t0, E0, E1, E2, v, cycles, trigger = [eval(s) for s in arg_list.split()]
+        self.ec301.potentialCycle(t0, E0, E1, E2, v, cycles, trigger)
 
     @command()
     def stop(self):
-        raise NotImplementedError
-        return True
+        self.ec301.stop()
 
-    # Can this return many arrays or does it have to be split into many commands?
-    @command()
-    def readout(self):
-        raise NotImplementedError
-        return True
+    @command(dtype_out=(float,))
+    def readout_t(self):
+        t, E, I, aux, raw = self.ec301.readout()
+        return t
+
+    @command(dtype_out=(float,))
+    def readout_E(self):
+        t, E, I, aux, raw = self.ec301.readout()
+        return E
+
+    @command(dtype_out=(float,))
+    def readout_I(self):
+        t, E, I, aux, raw = self.ec301.readout()
+        return I
+
+    @command(dtype_out=(float,))
+    def readout_aux(self):
+        t, E, I, aux, raw = self.ec301.readout()
+        return aux
+
+    @command(dtype_out=(float,))
+    def readout_raw(self):
+        t, E, I, aux, raw = self.ec301.readout()
+        return raw
 
 
     ### Other stuff ###
