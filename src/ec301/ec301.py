@@ -178,7 +178,7 @@ class EC301DS(Device):
         return I
 
     @command(dtype_out=(float,))
-    def readout_aux(self):
+    def readout_sync_adc(self):
         t, E, I, aux, raw = self.ec301.readout()
         return aux
 
