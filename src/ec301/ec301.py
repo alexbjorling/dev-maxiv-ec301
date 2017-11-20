@@ -13,12 +13,8 @@ class EC301DS(Device):
     #
     #   DevState.ON :     The device is in operation
     #   DevState.INIT :   Initialisation of the communication with the device and initial configuration
-    #   DevState.FAULT :  The Tango Device is not able to serve the request from/to this device.
-    #                     Possible cause :
-    #                     - Wrong Ip address : unable to communicate with the device
-    #                     - The device doesn't respond : not wired to the network or powered off
-    #                     - Failure loading library
-    #   DevState.Moving :  The Tango Device is performing a movement.
+    #   DevState.FAULT :  The Device has a problem and cannot handle further requests.
+    #   DevState.MOVING : The Device is engaged in an acquisition.
     """
     __metaclass__ = DeviceMeta
 
@@ -213,11 +209,17 @@ class EC301DS(Device):
             self.get_device_properties()
             self.ec301 = ec301lib.EC301(host=self.Host, port=self.Port)
         
-        except PyTango.DevFailed or PIe816Exception:
+        except:
             self.set_state(PyTango.DevState.FAULT)
             self.set_status('Device failed at init')
         
         self.set_state(PyTango.DevState.ON)
+
+    def dev_state(self):
+        state = self.get_state()
+        if self.ec301.running:
+            state = PyTango.DevState.MOVING
+        return state
     
     # not using this
     def always_executed_hook(self):
