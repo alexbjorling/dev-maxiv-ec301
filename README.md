@@ -9,4 +9,4 @@ therefore not be shorter than the data acquisition period
 
 TODO:
 * Error handling?
-
+* Many of the attributes can have only certain values (see all the setter asserts in lib-maxiv-ec301). Write this somehow so that jive knows about the possible choices for each attribute.
