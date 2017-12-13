@@ -2,9 +2,9 @@
 import ec301lib
 
 # Tango imports
-from PyTango import AttrWriteType, DispLevel
-from PyTango.server import Device, DeviceMeta, attribute, command, server_run,  device_property
-import PyTango
+from tango import AttrWriteType, DispLevel, DevState
+from tango.server import Device, DeviceMeta, attribute, command, server_run,  device_property
+
 
 class EC301DS(Device):
     """ An SRS EC301 device
@@ -13,15 +13,9 @@ class EC301DS(Device):
     #
     #   DevState.ON :     The device is in operation
     #   DevState.INIT :   Initialisation of the communication with the device and initial configuration
-    #   DevState.FAULT :  The Tango Device is not able to serve the request from/to this device.
-    #                     Possible cause :
-    #                     - Wrong Ip address : unable to communicate with the device
-    #                     - The device doesn't respond : not wired to the network or powered off
-    #                     - Failure loading library
-    #   DevState.Moving :  The Tango Device is performing a movement.
+    #   DevState.FAULT :  The Device has a problem and cannot handle further requests.
+    #   DevState.MOVING : The Device is engaged in an acquisition.
     """
-    __metaclass__ = DeviceMeta
-
 
     ### Properties ###
 
@@ -182,7 +176,7 @@ class EC301DS(Device):
         return I
 
     @command(dtype_out=(float,))
-    def readout_aux(self):
+    def readout_sync_adc(self):
         t, E, I, aux, raw = self.ec301.readout()
         return aux
 
@@ -194,34 +188,27 @@ class EC301DS(Device):
 
     ### Other stuff ###
 
-    # Not sure what this is
-    def get_device_properties(self, cls=None):
-        """Patch version of device properties.
-
-       Set properties at instance level in lower case.
-       """
-        Device.get_device_properties(self, cls)
-        for key, value in self.device_property_list.items():
-           setattr(self, key.lower(), value[2])
-           
     # Device methods
     def init_device(self):
         """Instantiate device object, do initial instrument configuration."""
-        self.set_state(PyTango.DevState.INIT)
+        self.set_state(DevState.INIT)
         
         try:
             self.get_device_properties()
             self.ec301 = ec301lib.EC301(host=self.Host, port=self.Port)
         
-        except PyTango.DevFailed or PIe816Exception:
-            self.set_state(PyTango.DevState.FAULT)
-            self.set_status('Device failed at init')
+        except Exception as e:
+            self.set_state(DevState.FAULT)
+            self.set_status('Device failed at init: %s' % e.message)
         
-        self.set_state(PyTango.DevState.ON)
-    
-    # not using this
+        self.set_state(DevState.ON)
+
+    # This sets the state before every command
     def always_executed_hook(self):
-        pass
+        if self.ec301.running:
+            self.set_state(DevState.MOVING)
+        else:
+            self.set_state(DevState.ON)
 
 
 def main():
